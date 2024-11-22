@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator liczb losowych</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Impact', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        input[type="number"] {
+            font-size: 24px;
+            padding: 10px;
+            margin-top: 10px;
+            width: 150px;
+            text-align: center;
+            border: 2px solid white;
+            background-color: black;
+            color: white;
+            border-radius: 10px;
+        }
+        button {
+            background-color: white;
+            color: black;
+            font-family: 'Impact', sans-serif;
+            font-size: 20px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: gray;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 32px;
+            color: white;
+            text-align: center;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wylosuj liczbę</h1>
+    <label for="min">Minimalna liczba:</label>
+    <input type="number" id="min" value="1">
+    <label for="max">Maksymalna liczba:</label>
+    <input type="number" id="max" value="7">
+    <label for="count">Ile liczb wylosować?</label>
+    <input type="number" id="count" min="1" max="10" value="1">
+    <button onclick="generateNumbers()">Losuj</button>
+    <div id="result"></div>
+
+    <canvas id="confetti"></canvas>
+
+    <script>
+        function generateNumbers() {
+            const min = parseInt(document.getElementById('min').value);
+            const max = parseInt(document.getElementById('max').value);
+            const count = parseInt(document.getElementById('count').value);
+            const resultDiv = document.getElementById('result');
+
+            if (isNaN(min) || isNaN(max) || isNaN(count) || min >= max || count < 1) {
+                resultDiv.textContent = 'Wprowadź poprawne dane!';
+                return;
+            }
+
+            const numbers = [];
+            for (let i = 0; i < count; i++) {
+                numbers.push(Math.floor(Math.random() * (max - min + 1)) + min);
+            }
+
+            const resultText = count === 1 ? 'Wylosowana liczba: ' : 'Wylosowane liczby: ';
+            resultDiv.textContent = resultText + numbers.join(', ');
+
+            launchConfetti();
+        }
+
+        // Konfetti
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let confettiPieces = [];
+        let confettiTimeout;
+
+        function createConfettiPiece() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                size: Math.random() * 10 + 5,
+                color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                velocity: {
+                    x: Math.random() * 2 - 1,
+                    y: Math.random() * 3 + 2
+                }
+            };
+        }
+
+        function drawConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confettiPieces.forEach(piece => {
+                ctx.fillStyle = piece.color;
+                ctx.fillRect(piece.x, piece.y, piece.size, piece.size);
+
+                piece.x += piece.velocity.x;
+                piece.y += piece.velocity.y;
+            });
+        }
+
+        function launchConfetti() {
+            confettiPieces = [];
+            for (let i = 0; i < 200; i++) {
+                confettiPieces.push(createConfettiPiece());
+            }
+
+            // Usuń konfetti po 7 sekundach
+            clearTimeout(confettiTimeout);
+            confettiTimeout = setTimeout(() => {
+                confettiPieces = [];
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Wyczyszczenie canvasu
+            }, 7000);
+        }
+
+        function updateConfetti() {
+            drawConfetti();
+            requestAnimationFrame(updateConfetti);
+        }
+
+        updateConfetti();
+    </script>
+</body>
+</html>
